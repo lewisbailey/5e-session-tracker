@@ -5,6 +5,7 @@ This folder is a standalone GitHub Pages repository. It intentionally excludes t
 ## What remains available
 
 - Quick Play, HP, Temporary HP, Inspiration and death saves
+- automatic maximum HP and armour-class calculation for standard imported classes and armour
 - spell-slot and hit-die tracking
 - manual limited-use resources and rest recovery
 - conditions and custom effects

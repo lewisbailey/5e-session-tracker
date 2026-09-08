@@ -28,8 +28,10 @@ assert(legal.includes("System Reference Document 5.2.1"),"SRD attribution is mis
 assert(legal.includes("creativecommons.org/licenses/by/4.0/legalcode"),"CC BY 4.0 link is missing");
 for(const assignment of [
   "window.AURORA_SPELLS={};","window.AURORA_RESOURCE_DEFS={};",
-  "window.AURORA_ITEMS={};","window.AURORA_COMPANIONS={};"
+  "window.AURORA_COMPANIONS={};"
 ]) assert(publicData.includes(assignment),`Public stub is not empty: ${assignment}`);
+assert(publicData.includes('"ID_WOTC_PHB24_CLASS_WARLOCK":8'),"Public hit-die mechanics are missing");
+assert(publicData.includes('"PHB","PHB24"'),"Public armour mechanics are missing");
 for(const phrase of ["Player’s Handbook (2024)","Dungeon Master’s Guide (2024)","Monster Manual (2025)"]){
   for(const file of ["public-data.js","index.html","sw.js"]){
     assert(!fs.readFileSync(file,"utf8").includes(phrase),`${phrase} data marker found in ${file}`);
