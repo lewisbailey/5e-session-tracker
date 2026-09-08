@@ -32,6 +32,10 @@ for(const assignment of [
 ]) assert(publicData.includes(assignment),`Public stub is not empty: ${assignment}`);
 assert(publicData.includes('"ID_WOTC_PHB24_CLASS_WARLOCK":8'),"Public hit-die mechanics are missing");
 assert(publicData.includes('"PHB","PHB24"'),"Public armour mechanics are missing");
+const app=fs.readFileSync("app.js","utf8");
+assert(app.includes("Confirm maximum HP"),"Imported maximum-HP confirmation is missing");
+assert(app.includes('updateViaCache:"none"'),"Service-worker update bypass is missing");
+assert(sw.includes("self.skipWaiting()"),"Immediate service-worker activation is missing");
 for(const phrase of ["Player’s Handbook (2024)","Dungeon Master’s Guide (2024)","Monster Manual (2025)"]){
   for(const file of ["public-data.js","index.html","sw.js"]){
     assert(!fs.readFileSync(file,"utf8").includes(phrase),`${phrase} data marker found in ${file}`);
