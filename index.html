@@ -1,0 +1,929 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <meta name="googlebot" content="noindex, nofollow, noarchive" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="5e Tracker" />
+  <title>5e Session Tracker — Web Edition</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon-180.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>5e Session Tracker</h1>
+      <div id="appVersionBadge" class="app-version-badge">Web Preview 1</div>
+      <p class="sub">Private, device-local session tracking from your browser.</p>
+    </div>
+    <button id="themeBtn" class="icon-btn" aria-label="Toggle theme">◐</button>
+  </header>
+
+  <main>
+    <section class="card public-edition-notice">
+      <strong>Public web edition</strong>
+      <span>Your characters and imported files stay in this browser. Full book databases are deliberately not included.</span>
+      <a href="LEGAL.html">Licensing and privacy</a>
+    </section>
+    <div id="quickPlayPage" class="app-page">
+      <section class="card quick-play-hero">
+        <div>
+          <div class="muted small">QUICK PLAY</div>
+          <h2 id="quickPlayName">Character</h2>
+          <div id="quickPlayMeta" class="muted"></div>
+        </div>
+        <button id="quickPlayCharacterBtn" class="secondary small-btn" type="button">Character Sheet</button>
+      </section>
+
+      <section class="quick-play-vitals">
+        <button id="quickPlayHp" class="card quick-play-tile" type="button"></button>
+        <button id="quickPlayAc" class="card quick-play-tile" type="button"></button>
+        <button id="quickPlayTempHp" class="card quick-play-tile" type="button"></button>
+        <button id="quickPlayInspiration" class="card quick-play-tile" type="button"></button>
+      </section>
+
+      <section class="grid two quick-play-grid">
+        <article class="card quick-play-panel">
+          <div class="card-head"><h2>Concentration & Effects</h2><button class="secondary small-btn" data-quick-tab="effects" type="button">Manage</button></div>
+          <div id="quickPlayEffects"></div>
+        </article>
+        <article class="card quick-play-panel">
+          <div class="card-head"><h2>Spell Slots</h2><button class="secondary small-btn" data-quick-tab="character" type="button">Manage</button></div>
+          <div id="quickPlaySlots" class="quick-play-slot-list"></div>
+        </article>
+      </section>
+
+      <section class="grid two quick-play-grid">
+        <article class="card quick-play-panel">
+          <div class="card-head"><h2>Resources</h2><button class="secondary small-btn" data-quick-tab="character" type="button">Manage</button></div>
+          <div id="quickPlayResources" class="quick-play-list"></div>
+        </article>
+        <article class="card quick-play-panel">
+          <div class="card-head"><h2>Conditions</h2><button class="secondary small-btn" data-quick-tab="effects" type="button">Manage</button></div>
+          <div id="quickPlayConditions" class="quick-play-list"></div>
+        </article>
+      </section>
+
+      <section class="card quick-play-panel">
+        <div class="card-head"><h2>Favourite Actions</h2><button class="secondary small-btn" data-quick-tab="actions" type="button">Choose</button></div>
+        <div id="quickPlayFavourites" class="quick-play-favourites"></div>
+      </section>
+    </div>
+
+    <div id="characterPage" class="app-page hidden">
+    <section class="card character-bar">
+      <div class="row gap">
+        <select id="characterSelect" aria-label="Character"></select>
+        <button id="newCharacterBtn">+ Character</button>
+        <button id="renameCharacterBtn" class="secondary">Rename</button>
+        <button id="deleteCharacterBtn" class="danger ghost">Delete</button>
+        <label class="button-like secondary">
+          Import Aurora
+          <input id="auroraImportInput" type="file" accept=".dnd5e,application/xml,text/xml" hidden />
+        </label>
+      </div>
+    </section>
+
+    <section id="auroraProfileCard" class="card hidden">
+      <div class="card-head aurora-card-head">
+        <div>
+          <h2>Aurora Character</h2>
+          <div id="auroraImportMeta" class="muted small"></div>
+        </div>
+        <div class="row gap wrap aurora-sync-actions">
+          <span class="pill">Imported</span>
+          <button id="saveAuroraBtn" type="button" class="primary small-btn">Save to Aurora</button>
+        </div>
+      </div>
+      <div id="auroraSummary" class="aurora-summary"></div>
+      <details class="aurora-details">
+        <summary>Abilities & Spellcasting</summary>
+        <div id="auroraAbilities" class="ability-grid top-space"></div>
+        <div id="auroraSpellcasting" class="top-space"></div>
+      </details>
+      <details class="aurora-details">
+        <summary>Spell Preparation</summary>
+        <div class="row gap wrap top-space preparation-toolbar">
+          <div id="preparedSpellMeta" class="muted small grow"></div>
+          <button id="resetPreparedBtn" type="button" class="secondary small-btn">Reset to Aurora</button>
+        </div>
+        <div id="auroraSpells" class="spell-list top-space"></div>
+      </details>
+    </section>
+
+    <section class="grid two">
+      <article class="card">
+        <div class="card-head">
+          <h2>Hit Points</h2>
+          <span id="hpPercent" class="pill"></span>
+        </div>
+        <div class="hp-display">
+          <button class="big-step danger" data-hp="-1">−</button>
+          <div>
+            <div class="big-number"><span id="currentHp">0</span><span class="slash">/</span><span id="maxHp">0</span></div>
+            <div class="muted">Current / Maximum</div>
+          </div>
+          <button class="big-step heal" data-hp="1">+</button>
+        </div>
+
+        <div class="row gap wrap">
+          <label class="field compact">
+            <span>Change</span>
+            <input id="hpDelta" type="number" inputmode="numeric" value="1" min="0" />
+          </label>
+          <button id="damageBtn" class="danger">Damage</button>
+          <button id="healBtn" class="heal">Heal</button>
+        </div>
+
+        <div class="row gap wrap top-space">
+          <label class="field">
+            <span>Max HP</span>
+            <input id="maxHpInput" type="number" inputmode="numeric" min="1" />
+          </label>
+          <label class="field">
+            <span>Temp HP</span>
+            <input id="tempHpInput" type="number" inputmode="numeric" min="0" />
+          </label>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <h2>Quick Status</h2>
+        </div>
+        <div id="characterArmorClass" class="live-ac-card"></div>
+        <label class="toggle-row top-space">
+          <span>Inspiration</span>
+          <input id="inspiration" type="checkbox" />
+        </label>
+        <div id="characterEffectsSummary" class="compact-effects-summary top-space"></div>
+
+        <div class="death-saves">
+          <div>
+            <strong>Death Saves</strong>
+            <div class="muted small">Tap circles to toggle</div>
+          </div>
+          <div class="save-line">
+            <span>Success</span>
+            <div id="deathSuccesses" class="dots"></div>
+          </div>
+          <div class="save-line">
+            <span>Failure</span>
+            <div id="deathFailures" class="dots"></div>
+          </div>
+          <button id="resetDeathBtn" class="secondary full">Reset Death Saves</button>
+        </div>
+      </article>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Spell Slots</h2>
+        <button id="resetSlotsBtn" class="secondary small-btn">Restore All</button>
+      </div>
+      <div id="spellSlots" class="slot-grid"></div>
+    </section>
+
+    <section class="grid two">
+      <article class="card">
+        <div class="card-head">
+          <h2>Hit Dice</h2>
+          <button id="addHitDieBtn" class="secondary small-btn">+ Die Type</button>
+        </div>
+        <div id="hitDiceList" class="stack"></div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <div>
+            <h2>Currency</h2>
+            <div id="currencySyncStatus" class="muted small"></div>
+          </div>
+          <button id="resetCurrencyBtn" type="button" class="secondary small-btn hidden">Reset to Aurora</button>
+        </div>
+        <div class="currency-grid">
+          <label class="field"><span>CP</span><input data-currency="cp" type="number" inputmode="numeric" /></label>
+          <label class="field"><span>SP</span><input data-currency="sp" type="number" inputmode="numeric" /></label>
+          <label class="field"><span>EP</span><input data-currency="ep" type="number" inputmode="numeric" /></label>
+          <label class="field"><span>GP</span><input data-currency="gp" type="number" inputmode="numeric" /></label>
+          <label class="field"><span>PP</span><input data-currency="pp" type="number" inputmode="numeric" /></label>
+        </div>
+      </article>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Resources</h2>
+        <button id="addResourceBtn" class="secondary small-btn">+ Resource</button>
+      </div>
+      <div id="resourceList" class="stack"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Rest</h2>
+      </div>
+      <div class="row gap wrap">
+        <button id="shortRestBtn" class="secondary grow">Short Rest</button>
+        <button id="longRestBtn" class="primary grow">Long Rest</button>
+      </div>
+      <p class="muted small top-space">Uses 2024 rest rules. Short Rest restores eligible features and Warlock Pact Magic slots; Long Rest restores HP, Hit Dice, spell slots, and rest-based resources.</p>
+    </section>
+    </div>
+
+
+
+    <div id="actionsPage" class="app-page hidden">
+      <section class="card actions-overview-card">
+        <div class="card-head actions-page-head">
+          <div>
+            <h2>Possible Actions</h2>
+            <div id="actionsCharacterMeta" class="muted small"></div>
+          </div>
+          <div class="actions-counts">
+            <span id="actionsActionCount" class="pill">0 Actions</span>
+            <span id="actionsBonusCount" class="pill">0 Bonus</span>
+            <span id="actionsReactionCount" class="pill">0 Reactions</span>
+          </div>
+        </div>
+        <div id="actionsTurnContext" class="actions-turn-context hidden"></div>
+        <div id="actionsArmorClass" class="live-ac-strip top-space"></div>
+        <div id="actionsEffectsSummary" class="compact-effects-summary top-space"></div>
+        <p class="muted small top-space">Character-specific options are shown first. Tap anything for details.</p>
+      </section>
+      <div id="actionsList" class="actions-sections"></div>
+    </div>
+
+
+    <div id="effectsPage" class="app-page hidden">
+      <section class="card effects-overview-card">
+        <div class="card-head effects-page-head">
+          <div>
+            <h2>Conditions & Active Effects</h2>
+            <div id="effectsCharacterMeta" class="muted small"></div>
+          </div>
+          <div class="row gap wrap">
+            <button id="addConditionBtn" class="primary small-btn" type="button">+ Condition</button>
+            <button id="addCustomEffectBtn" class="secondary small-btn" type="button">+ Custom Effect</button>
+          </div>
+        </div>
+        <div id="effectsArmorClass" class="live-ac-strip"></div>
+        <div class="effects-summary-row top-space">
+          <span id="effectsConditionCount" class="pill">0 conditions</span>
+          <span id="effectsActiveCount" class="pill">0 effects</span>
+          <span id="effectsConcentration" class="pill">No concentration</span>
+        </div>
+        <p class="muted small top-space">Supported spells and free casts can add effects automatically. Encounter turns can expire short timed effects such as Shield.</p>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>Conditions</h2><span class="muted small">Tap for rules</span></div>
+        <div id="conditionsList" class="effects-list"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>Active Effects & Buffs</h2><span class="muted small">Concentration, spell effects and custom reminders</span></div>
+        <div id="activeEffectsList" class="effects-list"></div>
+      </section>
+    </div>
+
+    <div id="inventoryPage" class="app-page hidden">
+      <section class="card">
+        <div class="card-head inventory-page-head">
+          <div>
+            <h2>Inventory</h2>
+            <div id="inventoryCharacterMeta" class="muted small"></div>
+          </div>
+          <div class="row gap wrap">
+            <button id="addInventoryItemBtn" class="primary small-btn" type="button">+ Add Item</button>
+            <button id="resetInventoryBtn" class="secondary small-btn" type="button">Reset to Aurora</button>
+            <button id="inventorySaveAuroraBtn" class="primary small-btn" type="button">Save to Aurora</button>
+          </div>
+        </div>
+        <div class="inventory-toolbar">
+          <label class="field grow">
+            <span>Search carried items</span>
+            <input id="inventoryFilter" type="search" placeholder="Search inventory..." autocomplete="off" />
+          </label>
+          <label class="field inventory-sort-field">
+            <span>Sort</span>
+            <select id="inventorySort">
+              <option value="category">Category</option>
+              <option value="name">Name</option>
+              <option value="equipped">Equipped first</option>
+            </select>
+          </label>
+        </div>
+        <div class="inventory-summary top-space">
+          <span id="inventoryItemCount" class="pill">0 items</span>
+          <span id="inventoryWeight" class="pill">0 lb.</span>
+          <span id="inventoryAttunement" class="pill">Attuned 0 / 3</span>
+          <span id="inventorySyncStatus" class="muted small"></span>
+        </div>
+      </section>
+
+      <section class="card">
+        <div id="inventoryList" class="inventory-list"></div>
+      </section>
+    </div>
+
+
+    <div id="companionsPage" class="app-page hidden">
+      <section class="card">
+        <div class="card-head companion-page-head">
+          <div>
+            <h2>Companions & Minions</h2>
+            <div id="companionOwnerMeta" class="muted small"></div>
+          </div>
+          <button id="addCompanionBtn" class="primary small-btn" type="button">+ Add Companion</button>
+        </div>
+        <div id="companionSuggestions" class="companion-suggestions top-space"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h2>Active Companions</h2>
+            <div class="muted small">HP is tracked directly because these creatures belong to you.</div>
+          </div>
+          <span id="companionCount" class="pill">0</span>
+        </div>
+        <div id="companionList" class="companion-list"></div>
+      </section>
+    </div>
+
+
+    <div id="notesPage" class="app-page hidden">
+      <section class="card">
+        <div class="card-head notes-page-head">
+          <div>
+            <h2>Character Notes</h2>
+            <div id="notesCharacterMeta" class="muted small"></div>
+          </div>
+          <div class="row gap wrap">
+            <button id="addJournalNoteBtn" class="primary small-btn" type="button">+ Add Note</button>
+            <button id="resetJournalNotesBtn" class="secondary small-btn" type="button">Reset to Aurora</button>
+            <button id="notesSaveAuroraBtn" class="primary small-btn" type="button">Save to Aurora</button>
+          </div>
+        </div>
+        <div class="notes-toolbar top-space">
+          <label class="field grow">
+            <span>Search notes</span>
+            <input id="journalNoteSearch" type="search" placeholder="Person, location, clue, tag..." autocomplete="off" />
+          </label>
+          <label class="field notes-filter-field">
+            <span>Show</span>
+            <select id="journalNoteFilter">
+              <option value="all">All notes</option>
+              <option value="identity">People / Identities</option>
+              <option value="impersonate">Can Impersonate</option>
+              <option value="npc">NPCs</option>
+              <option value="location">Locations</option>
+              <option value="quest">Quests</option>
+              <option value="clue">Clues</option>
+              <option value="general">General</option>
+            </select>
+          </label>
+        </div>
+        <div class="notes-summary top-space">
+          <span id="journalNoteCount" class="pill">0 notes</span>
+          <span id="identityNoteCount" class="pill">0 identities</span>
+          <span id="impersonationNoteCount" class="pill">0 impersonations</span>
+          <span id="notesSyncStatus" class="muted small"></span>
+        </div>
+      </section>
+
+      <section class="card">
+        <div id="journalNotesList" class="journal-notes-list"></div>
+      </section>
+    </div>
+
+    <div id="encounterPage" class="app-page hidden">
+
+        <section class="card" id="encounterRosterPickerCard">
+          <div class="card-head">
+            <div>
+              <h2>Add Combatant</h2>
+              <p class="muted small">Choose one of your imported Aurora characters or created companions.</p>
+            </div>
+          </div>
+          <div class="row gap wrap encounter-picker-row">
+            <select id="encounterRosterSelect" class="grow">
+              <option value="">Select character or companion…</option>
+            </select>
+            <button id="encounterRosterAddBtn" type="button">Add</button>
+          </div>
+          <p id="encounterRosterHint" class="muted small top-space"></p>
+        </section>
+
+      <section class="card encounter-toolbar">
+        <div class="encounter-topline">
+          <div>
+            <div class="muted small">ROUND</div>
+            <div id="encounterRound" class="round-number">1</div>
+          </div>
+          <div class="encounter-current grow">
+            <div class="muted small">CURRENT TURN</div>
+            <div id="encounterCurrentName" class="current-turn-name">No combatants</div>
+          </div>
+        </div>
+
+        <div class="row gap wrap top-space">
+          <button id="previousTurnBtn" class="secondary grow">← Previous</button>
+          <button id="nextTurnBtn" class="grow">Next Turn →</button>
+        </div>
+
+        <div class="row gap wrap top-space">
+          <button id="addCombatantBtn" class="secondary grow">+ Manual Combatant</button>
+          <button id="restartEncounterBtn" class="secondary">Restart Round</button>
+          <button id="clearEncounterBtn" class="danger ghost">Clear</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h2>Initiative</h2>
+            <div class="muted small">Player view — tracks initiative and observed damage, not hidden HP.</div>
+          </div>
+          <span id="combatantCount" class="pill">0</span>
+        </div>
+        <div id="encounterList" class="encounter-list"></div>
+      </section>
+    </div>
+  </main>
+
+  <nav class="bottom-nav" aria-label="App sections">
+    <button id="quickPlayTabBtn" class="nav-tab active" type="button">
+      <span class="nav-icon">⌁</span>
+      <span>Quick Play</span>
+    </button>
+
+    <button id="actionsTabBtn" class="nav-tab" type="button">
+      <span class="nav-icon">✦</span>
+      <span>Actions</span>
+    </button>
+    <button id="encounterTabBtn" class="nav-tab" type="button">
+      <span class="nav-icon">⚔</span>
+      <span>Encounter</span>
+    </button>
+    <button id="notesTabBtn" class="nav-tab" type="button">
+      <span class="nav-icon">✎</span>
+      <span>Notes</span>
+    </button>
+    <button id="moreTabBtn" class="nav-tab" type="button" aria-haspopup="dialog">
+      <span class="nav-icon">•••</span>
+      <span>More</span>
+      <span id="moreTabBadge" class="nav-badge hidden"></span>
+    </button>
+  </nav>
+
+  <dialog id="moreMenuDialog" class="more-menu-dialog">
+    <div class="more-menu-head"><div><h3>More</h3><div class="muted small">Character tools and supporting pages</div></div><button id="closeMoreMenuBtn" class="secondary" type="button">Close</button></div>
+    <div class="more-menu-grid top-space">
+      <button class="more-menu-item" data-more-tab="character" type="button"><span class="more-menu-icon">◈</span><span><strong>Character</strong><small>HP, slots, resources and rests</small></span></button>
+      <button class="more-menu-item" data-more-tab="effects" type="button"><span class="more-menu-icon">◎</span><span><strong>Effects</strong><small id="moreEffectsMeta">Conditions and active effects</small></span></button>
+      <button class="more-menu-item" data-more-tab="inventory" type="button"><span class="more-menu-icon">▣</span><span><strong>Inventory</strong><small>Equipment and Aurora items</small></span></button>
+      <button class="more-menu-item" data-more-tab="companions" type="button"><span class="more-menu-icon">◆</span><span><strong>Companions</strong><small id="moreCompanionsMeta">Familiars, minions and pets</small></span></button>
+    </div>
+  </dialog>
+
+
+  <dialog id="addItemDialog" class="inventory-dialog">
+    <div class="inventory-dialog-head">
+      <div>
+        <h3>Add Item</h3>
+        <div class="muted small">The public edition does not bundle the full equipment catalogue. Imported character items remain available.</div>
+      </div>
+      <button id="closeAddItemBtn" class="secondary" type="button">Close</button>
+    </div>
+    <label class="field top-space">
+      <span>Search</span>
+      <input id="addItemSearch" type="search" placeholder="Dagger, potion, bag of holding..." autocomplete="off" />
+    </label>
+    <div class="row gap wrap top-space">
+      <label class="field compact"><span>Quantity</span><input id="addItemQuantity" type="number" min="1" max="99" value="1" /></label>
+      <label class="field"><span>Type</span><select id="addItemTypeFilter"><option value="all">All</option><option value="Weapon">Weapons</option><option value="Armor">Armor</option><option value="Item">Gear</option><option value="Magic Item">Magic Items</option></select></label>
+    </div>
+    <div id="addItemResults" class="item-search-results top-space"></div>
+  </dialog>
+
+  <dialog id="itemDetailDialog" class="inventory-detail-dialog">
+    <div class="inventory-dialog-head">
+      <div>
+        <h3 id="itemDetailName">Item</h3>
+        <div id="itemDetailSource" class="muted small"></div>
+      </div>
+      <button id="closeItemDetailBtn" class="secondary" type="button">Close</button>
+    </div>
+    <div id="itemDetailMeta" class="spell-meta"></div>
+    <div id="itemDetailDescription" class="resource-description"></div>
+    <div id="itemDetailMods" class="top-space"></div>
+  </dialog>
+
+  <dialog id="manageItemDialog" class="inventory-dialog">
+    <div class="inventory-dialog-head">
+      <div>
+        <h3 id="manageItemName">Manage Item</h3>
+        <div id="manageItemSub" class="muted small"></div>
+      </div>
+      <button id="closeManageItemBtn" class="secondary" type="button">Close</button>
+    </div>
+    <div class="row gap wrap top-space">
+      <button id="viewManagedItemBtn" class="secondary grow" type="button">View Description</button>
+      <button id="duplicateManagedItemBtn" class="secondary grow" type="button">+1 Quantity</button>
+      <button id="removeManagedItemBtn" class="danger ghost grow" type="button">Remove One</button>
+    </div>
+    <div class="grid two top-space">
+      <label class="field"><span>Equipped</span><select id="manageItemEquipped"><option value="false">Carried</option><option value="true">Equipped</option></select></label>
+      <label class="field"><span>Equipment location</span><select id="manageItemLocation"><option value="">Automatic</option><option>Armor</option><option>Primary Hand</option><option>Secondary Hand</option><option>Head</option><option>Neck</option><option>Shoulders</option><option>Feet</option><option>Hands</option><option>Waist</option><option>Finger</option><option>Worn</option></select></label>
+    </div>
+    <label id="manageAttunedRow" class="toggle-row top-space">
+      <span>Attuned <span class="muted small">(app tracking)</span></span>
+      <input id="manageItemAttuned" type="checkbox" />
+    </label>
+    <label id="manageChargesRow" class="field top-space hidden"><span>Charges remaining <span id="manageChargesMax"></span></span><input id="manageItemCharges" type="number" min="0" /></label>
+    <label class="field top-space"><span>Notes</span><textarea id="manageItemNotes" rows="3" placeholder="Session notes for this item..."></textarea></label>
+    <div id="manageItemMods" class="top-space"></div>
+    <button id="saveManagedItemBtn" class="primary full top-space" type="button">Save Changes</button>
+  </dialog>
+
+  <dialog id="resourceDialog">
+    <form method="dialog" id="resourceForm">
+      <h3>Add Resource</h3>
+      <label class="field"><span>Name</span><input id="resourceName" required placeholder="Arcane Jolt" /></label>
+      <label class="field"><span>Maximum</span><input id="resourceMax" type="number" min="1" value="1" required /></label>
+      <label class="field">
+        <span>Resets</span>
+        <select id="resourceReset">
+          <option value="long">Long Rest</option>
+          <option value="short">Short Rest</option>
+          <option value="manual">Manual Only</option>
+        </select>
+      </label>
+      <div class="row gap">
+        <button id="cancelResourceBtn" type="button" class="secondary">Cancel</button>
+        <button value="default" id="saveResourceBtn">Add</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="hitDieDialog">
+    <form method="dialog" id="hitDieForm">
+      <h3>Add Hit Die Type</h3>
+      <label class="field">
+        <span>Die</span>
+        <select id="hitDieType">
+          <option>d6</option><option>d8</option><option>d10</option><option>d12</option>
+        </select>
+      </label>
+      <label class="field"><span>Maximum</span><input id="hitDieMax" type="number" min="1" value="1" required /></label>
+      <div class="row gap">
+        <button id="cancelHitDieBtn" type="button" class="secondary">Cancel</button>
+        <button value="default" id="saveHitDieBtn">Add</button>
+      </div>
+    </form>
+  </dialog>
+
+
+
+  <dialog id="addCompanionDialog" class="companion-dialog">
+    <div class="companion-dialog-head">
+      <div>
+        <h3>Add Companion</h3>
+        <div class="muted small">Create a custom companion or minion. Official creature databases are not bundled.</div>
+      </div>
+      <button id="closeAddCompanionBtn" class="secondary" type="button">Close</button>
+    </div>
+    <label class="field top-space">
+      <span>Preset</span>
+      <select id="companionPresetType">
+        <option value="custom">Custom Companion / Minion</option>
+      </select>
+    </label>
+    <label id="companionFormRow" class="field top-space">
+      <span>Form</span>
+      <select id="companionForm"></select>
+    </label>
+    <label id="companionSpiritRow" class="field top-space">
+      <span id="companionSpiritLabel">Spirit type</span>
+      <select id="companionSpiritType"><option>Celestial</option><option>Fey</option><option>Fiend</option></select>
+      <small id="companionSpiritHint" class="muted"></small>
+    </label>
+    <label id="companionSummonLevelRow" class="field top-space hidden">
+      <span>Spell slot level</span>
+      <input id="companionSummonLevel" type="number" min="2" max="9" value="2" />
+    </label>
+
+    <label id="companionDamageTypeRow" class="field top-space hidden">
+      <span>Draconic Essence</span>
+      <select id="companionDamageType">
+        <option>Acid</option>
+        <option>Cold</option>
+        <option>Fire</option>
+        <option>Lightning</option>
+        <option>Poison</option>
+      </select>
+      <small class="muted">Sets the Drake Companion's damage immunity and Infused Strikes damage type.</small>
+    </label>
+    <label class="field top-space">
+      <span>Name</span>
+      <input id="companionName" placeholder="Leave blank to use the form name" />
+    </label>
+    <div id="customCompanionFields" class="hidden">
+      <div class="grid two top-space">
+        <label class="field"><span>Maximum HP</span><input id="customCompanionHp" type="number" min="1" value="10" /></label>
+        <label class="field"><span>Armor Class</span><input id="customCompanionAc" type="number" min="0" value="10" /></label>
+      </div>
+      <div class="grid two top-space">
+        <label class="field"><span>Speed</span><input id="customCompanionSpeed" placeholder="30 ft." /></label>
+        <label class="field"><span>Creature type</span><input id="customCompanionType" placeholder="Beast, Construct..." /></label>
+      </div>
+    </div>
+    <section id="companionCreatePreview" class="companion-create-preview top-space">
+      <div class="companion-preview-head">
+        <div>
+          <strong id="companionCreatePreviewName">Stat block preview</strong>
+          <div id="companionCreatePreviewSource" class="muted small"></div>
+        </div>
+      </div>
+      <div id="companionCreatePreviewMeta" class="spell-meta top-space"></div>
+      <div id="companionCreatePreviewScaling" class="companion-owner-scaling top-space"></div>
+      <div id="companionCreatePreviewBlock" class="companion-stat-block top-space"></div>
+    </section>
+    <label class="field top-space"><span>Notes</span><textarea id="companionCreateNotes" rows="3" placeholder="Appearance, commands, equipment, etc."></textarea></label>
+    <button id="createCompanionBtn" class="primary full top-space" type="button">Create Companion</button>
+  </dialog>
+
+  <dialog id="companionDetailDialog" class="companion-detail-dialog">
+    <div class="companion-dialog-head">
+      <div>
+        <h3 id="companionDetailName">Companion</h3>
+        <div id="companionDetailSource" class="muted small"></div>
+      </div>
+      <button id="closeCompanionDetailBtn" class="secondary" type="button">Close</button>
+    </div>
+    <div id="companionDetailMeta" class="spell-meta"></div>
+    <div id="companionOwnerScaling" class="companion-owner-scaling top-space"></div>
+    <div id="companionStatBlock" class="companion-stat-block top-space"></div>
+  </dialog>
+
+
+
+  <dialog id="journalNoteDialog" class="journal-note-dialog">
+    <div class="journal-note-dialog-head">
+      <div>
+        <h3 id="journalNoteDialogTitle">Add Note</h3>
+        <div class="muted small">Saved with this character and embedded in its Aurora file when you use Save to Aurora.</div>
+      </div>
+      <button id="closeJournalNoteDialogBtn" class="secondary" type="button">Close</button>
+    </div>
+    <div class="grid two top-space">
+      <label class="field">
+        <span>Type</span>
+        <select id="journalNoteType">
+          <option value="identity">Person / Identity</option>
+          <option value="npc">NPC</option>
+          <option value="location">Location</option>
+          <option value="quest">Quest</option>
+          <option value="clue">Clue</option>
+          <option value="general">General</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Name / Title</span>
+        <input id="journalNoteTitle" placeholder="Lord Harren Vale" />
+      </label>
+    </div>
+    <label class="field top-space">
+      <span>Tags</span>
+      <input id="journalNoteTags" placeholder="Sharn, ally, House Cannith" />
+      <small class="muted">Separate tags with commas.</small>
+    </label>
+    <label class="toggle-row top-space note-pin-row">
+      <span>Pin this note</span>
+      <input id="journalNotePinned" type="checkbox" />
+    </label>
+    <div id="identityNoteFields" class="identity-note-fields top-space">
+      <label class="toggle-row">
+        <span>Can impersonate</span>
+        <input id="journalNoteCanImpersonate" type="checkbox" />
+      </label>
+      <label class="field top-space">
+        <span>Appearance</span>
+        <textarea id="journalNoteAppearance" rows="3" placeholder="Height, build, clothing, distinctive features..."></textarea>
+      </label>
+      <label class="field top-space">
+        <span>Voice / Mannerisms</span>
+        <textarea id="journalNoteVoice" rows="3" placeholder="Accent, speech pattern, habits, posture..."></textarea>
+      </label>
+    </div>
+    <label class="field top-space">
+      <span>Notes</span>
+      <textarea id="journalNoteBody" rows="6" placeholder="What you know, where you met them, secrets, clues, quest details..."></textarea>
+    </label>
+    <button id="saveJournalNoteBtn" class="primary full top-space" type="button">Save Note</button>
+  </dialog>
+
+  <dialog id="combatantDialog">
+    <form method="dialog" id="combatantForm">
+      <h3>Add Combatant</h3>
+      <label class="field"><span>Name</span><input id="combatantName" required placeholder="Goblin 1" /></label>
+      <label class="field"><span>Initiative</span><input id="combatantInitiative" type="number" inputmode="numeric" value="10" required /></label>
+      <label class="field">
+        <span>Type</span>
+        <select id="combatantType">
+          <option value="enemy">Enemy</option>
+          <option value="ally">Ally</option>
+          <option value="neutral">Neutral</option>
+        </select>
+      </label>
+      <div class="row gap">
+        <button id="cancelCombatantBtn" type="button" class="secondary">Cancel</button>
+        <button value="default">Add</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="combatantDetailDialog" class="combatant-detail-dialog">
+    <div class="combatant-dialog-head">
+      <div>
+        <h3 id="combatantDetailName">Combatant</h3>
+        <div id="combatantDetailSub" class="muted small"></div>
+      </div>
+      <button id="closeCombatantDetailBtn" class="secondary" type="button">Close</button>
+    </div>
+
+    <div class="damage-total-panel">
+      <div id="combatantDamageLabel" class="muted small">OBSERVED DAMAGE TAKEN</div>
+      <div id="combatantDamageTotal" class="damage-total">0</div>
+    </div>
+
+    <div class="row gap wrap top-space">
+      <label class="field compact grow">
+        <span id="combatantDamageInputLabel">Damage</span>
+        <input id="combatantDamageInput" type="number" inputmode="numeric" min="1" value="1" />
+      </label>
+      <button id="addCombatantDamageBtn" class="danger grow" type="button">Add Damage</button>
+      <button id="healCombatantCompanionBtn" class="heal grow hidden" type="button">Heal</button>
+      <button id="undoCombatantDamageBtn" class="secondary" type="button">Undo Last</button>
+    </div>
+
+    <div class="grid two top-space">
+      <label class="field">
+        <span>Initiative</span>
+        <input id="editCombatantInitiative" type="number" inputmode="numeric" />
+      </label>
+      <label class="field">
+        <span>Status</span>
+        <select id="combatantStatus">
+          <option value="normal">Normal</option>
+          <option value="bloodied">Bloodied</option>
+          <option value="down">Down</option>
+          <option value="defeated">Defeated</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="top-space">
+      <strong>Conditions</strong>
+      <div id="combatantConditions" class="condition-grid top-space"></div>
+    </div>
+
+    <label class="field top-space">
+      <span>Concentration / ongoing effect</span>
+      <input id="combatantConcentration" placeholder="e.g. Bless" />
+    </label>
+
+    <label class="field top-space">
+      <span>Notes</span>
+      <textarea id="combatantNotes" rows="3" placeholder="Observed AC, resistance, reaction used..."></textarea>
+    </label>
+
+    <div class="row gap wrap top-space">
+      <button id="deleteCombatantBtn" class="danger ghost grow" type="button">Remove Combatant</button>
+    </div>
+  </dialog>
+
+
+
+  <dialog id="conditionDialog" class="effects-dialog">
+    <div class="effects-dialog-head">
+      <div>
+        <h3>Conditions</h3>
+        <div class="muted small">Toggle the conditions currently affecting this character. Tap ? for a rules reminder.</div>
+      </div>
+      <button id="closeConditionDialogBtn" class="secondary" type="button">Close</button>
+    </div>
+    <div id="conditionPicker" class="condition-picker top-space"></div>
+  </dialog>
+
+  <dialog id="customEffectDialog" class="effects-dialog">
+    <div class="effects-dialog-head">
+      <div>
+        <h3>Add Custom Effect</h3>
+        <div class="muted small">For buffs, debuffs, magic-item effects, environmental effects or reminders the app cannot infer.</div>
+      </div>
+      <button id="closeCustomEffectDialogBtn" class="secondary" type="button">Close</button>
+    </div>
+    <div class="grid two top-space">
+      <label class="field"><span>Name</span><input id="customEffectName" placeholder="Blessed by shrine" /></label>
+      <label class="field"><span>Source</span><input id="customEffectSource" placeholder="Spell, item, DM ruling..." /></label>
+    </div>
+    <label class="field top-space"><span>Reminder / effect</span><textarea id="customEffectSummary" rows="4" placeholder="What should I remember while this is active?"></textarea></label>
+    <div class="grid two top-space">
+      <label class="field"><span>Duration</span>
+        <select id="customEffectDuration">
+          <option value="manual">Until removed</option>
+          <option value="concentration">Concentration</option>
+          <option value="start_next_turn">Until start of next turn</option>
+          <option value="rounds">Rounds</option>
+          <option value="short_rest">Until Short Rest</option>
+          <option value="long_rest">Until Long Rest</option>
+          <option value="permanent">Persistent</option>
+        </select>
+      </label>
+      <label id="customEffectRoundsRow" class="field hidden"><span>Rounds</span><input id="customEffectRounds" type="number" min="1" max="999" value="10" /></label>
+    </div>
+    <div class="grid two top-space">
+      <label class="field"><span>Armor Class modifier (optional)</span><input id="customEffectAcBonus" type="number" step="1" value="0" placeholder="e.g. 2 or -1" /></label>
+      <div class="muted small custom-ac-hint">Use this for temporary buffs or penalties that directly change AC. The live AC display updates automatically.</div>
+    </div>
+    <div class="grid three top-space effect-counter-fields">
+      <label class="field"><span>Counter label (optional)</span><input id="customEffectCounterLabel" placeholder="Charges" /></label>
+      <label class="field"><span>Current</span><input id="customEffectCounterCurrent" type="number" min="0" /></label>
+      <label class="field"><span>Maximum</span><input id="customEffectCounterMax" type="number" min="1" /></label>
+    </div>
+    <button id="saveCustomEffectBtn" class="primary full top-space" type="button">Add Effect</button>
+  </dialog>
+
+  <dialog id="effectDetailDialog" class="effect-detail-dialog">
+    <div class="effects-dialog-head">
+      <div>
+        <h3 id="effectDetailName">Effect</h3>
+        <div id="effectDetailSource" class="muted small"></div>
+      </div>
+      <button id="closeEffectDetailBtn" class="secondary" type="button">Close</button>
+    </div>
+    <div id="effectDetailMeta" class="spell-meta"></div>
+    <div id="effectDetailDescription" class="effect-detail-description"></div>
+    <button id="effectDetailEndBtn" class="danger ghost full top-space" type="button">End Effect</button>
+  </dialog>
+
+  <dialog id="resourceDetailsDialog" class="resource-details-dialog">
+    <div class="resource-details-head">
+      <div>
+        <h3 id="resourceDetailsName">Resource</h3>
+        <div id="resourceDetailsSource" class="muted small"></div>
+      </div>
+      <button id="resourceDetailsClose" class="secondary" type="button">Close</button>
+    </div>
+    <div id="resourceDetailsMeta" class="spell-meta"></div>
+    <div id="resourceDetailsDescription" class="resource-description"></div>
+  </dialog>
+
+
+  <dialog id="actionDetailDialog" class="action-detail-dialog">
+    <div class="action-detail-head">
+      <div>
+        <h3 id="actionDetailName">Action</h3>
+        <div id="actionDetailSource" class="muted small"></div>
+      </div>
+      <button id="actionDetailClose" class="secondary" type="button">Close</button>
+    </div>
+    <div id="actionDetailMeta" class="spell-meta"></div>
+    <div id="actionDetailDescription" class="action-detail-description"></div>
+  </dialog>
+
+  <dialog id="spellDialog" class="spell-dialog">
+    <div class="spell-dialog-head">
+      <div>
+        <h3 id="spellDialogName">Spell</h3>
+        <div id="spellDialogSource" class="muted small"></div>
+      </div>
+      <button id="spellDialogClose" class="secondary" type="button">Close</button>
+    </div>
+    <div id="spellDialogMeta" class="spell-meta"></div>
+    <div id="spellDialogDescription" class="spell-description"></div>
+    <div id="spellUseControls" class="spell-use-controls top-space hidden">
+      <div id="spellUseHint" class="muted small"></div>
+      <div class="row gap wrap top-space">
+        <button id="spellUseFreeBtn" class="primary grow hidden" type="button">Use Free Cast</button>
+        <button id="spellCastSlotBtn" class="secondary grow" type="button">Cast / Use</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="rest-rules.js"></script>
+  <script src="public-data.js"></script>
+  <script src="effects-rules.js"></script>
+  <script src="armor-class.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

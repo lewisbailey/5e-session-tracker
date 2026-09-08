@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Indexing is prevented by the noindex meta directive in index.html.
+# Crawlers must be allowed to read that directive.
