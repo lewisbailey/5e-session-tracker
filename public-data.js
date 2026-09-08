@@ -17,6 +17,16 @@ window.AURORA_CLASS_HD={
   "ID_WOTC_PHB_CLASS_ROGUE":8,"ID_WOTC_PHB_CLASS_SORCERER":6,
   "ID_WOTC_PHB_CLASS_WARLOCK":8,"ID_WOTC_PHB_CLASS_WIZARD":6
 };
+// Numerical ability-score selections used by Aurora saves. The Android build
+// uses the same rules when reconstructing final abilities and maximum HP.
+window.AURORA_RULES={};
+for(const ability of ["STRENGTH","DEXTERITY","CONSTITUTION","INTELLIGENCE","WISDOM","CHARISMA"]){
+  const stat=ability.toLowerCase();
+  window.AURORA_RULES[`ID_INTERNAL_ABILITY_SCORE_IMPROVEMENT_FEAT_${ability}`]={stats:[{name:stat,value:"1",bonus:""}]};
+  for(const amount of [1,2]){
+    window.AURORA_RULES[`ID_WOTC_TCOE_OPTION_CUSTOMIZED_ASI_${ability}_INCREASE_${amount}`]={stats:[{name:stat,value:String(amount),bonus:""}]};
+  }
+}
 window.AURORA_SPELLS={};
 window.AURORA_RESOURCE_DEFS={};
 window.AURORA_FREE_CASTS={};

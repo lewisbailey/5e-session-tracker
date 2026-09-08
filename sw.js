@@ -1,4 +1,4 @@
-const CACHE="five-e-session-tracker-web-preview-3";
+const CACHE="five-e-session-tracker-web-preview-4";
 const ASSETS=[
   "./","./index.html","./styles.css","./app.js","./public-data.js",
   "./rest-rules.js","./effects-rules.js","./armor-class.js",

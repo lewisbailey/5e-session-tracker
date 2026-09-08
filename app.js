@@ -4253,31 +4253,6 @@ q("#auroraImportInput").onchange=async e=>{
   try{
     const xml=await file.text();
     const data=parseAuroraCharacter(xml,file.name);
-    if(window.PUBLIC_EDITION){
-      const previous=state.characters.find(c=>c.aurora?.sourceFile===file.name)
-        || state.characters.find(c=>c.aurora?.name===data.name);
-      const confirmed=previous?.aurora?.maxHpConfirmed===true;
-      const sameLevel=Number(previous?.aurora?.level)===Number(data.level);
-      if(confirmed && sameLevel){
-        data.maxHp=Number(previous.hp.max)||data.maxHp;
-        data.maxHpConfirmed=true;
-      }else{
-        const suggested=Math.max(1,Number(data.maxHp)||Number(previous?.hp?.max)||1);
-        const answer=window.prompt(
-          "Confirm maximum HP. Aurora .dnd5e files do not store the final sheet HP reliably, especially when HP was rolled.",
-          String(suggested)
-        );
-        if(answer!==null){
-          const hp=Number(answer);
-          if(Number.isFinite(hp) && hp>0){
-            data.maxHp=Math.floor(hp);
-            data.maxHpConfirmed=true;
-          }else{
-            throw new Error("Maximum HP must be a positive number.");
-          }
-        }
-      }
-    }
     applyAuroraImport(data);
   }catch(err){
     alert("Aurora import failed: "+(err?.message||"Unknown error"));
